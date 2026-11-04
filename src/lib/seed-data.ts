@@ -2,6 +2,60 @@ import { Service, Therapist, LocationArea, Review, SlotConfig } from "./types";
 
 export const initialServices: Service[] = [
   {
+    id: "dry-massage",
+    name: "Dry Massage (No-Oil Acupressure)",
+    slug: "dry-massage",
+    category: "Therapeutic",
+    tag: "No Oil • Zero Residue",
+    shortDescription: "Traditional full-body stretching and acupressure performed over clothes. Zero oily residue, immediate fatigue recovery.",
+    fullDescription: "A fully clothed therapeutic massage combining ancient Thai acupressure points, rhythmic joint mobilisations, and gentle spinal decompression. Perfect for active professionals requiring immediate physical recharge without the mess or shower requirements of oil massage.",
+    basePrice: 849,
+    rating: 4.93,
+    reviewCount: 420,
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1200&q=80",
+    ],
+    durations: [
+      { durationMinutes: 60, price: 849, originalPrice: 1199 },
+      { durationMinutes: 30, price: 549, originalPrice: 799 },
+      { durationMinutes: 90, price: 1249, originalPrice: 1699 },
+    ],
+    inclusions: [
+      "Portable ergonomic massage bed brought by certified therapist",
+      "Fresh sanitized disposable linen and headrest cover",
+      "Zero oil used – performed in comfortable loose clothing",
+      "Full spine decompression and acupressure meridian release",
+      "Zero cleanup required by client",
+    ],
+    benefits: [
+      "Discharges nervous exhaustion without sticky oil cleanup",
+      "Improves joint range of motion and alleviates sciatic tightness",
+      "Instant recovery for busy working executives",
+    ],
+    suitableFor: [
+      "Desk workers, travelers, and executives taking quick recovery breaks",
+      "Anyone who prefers oil-free body stretching and pressure therapy",
+    ],
+    preparation: [
+      "Wear loose, comfortable workout clothing or pajamas",
+      "Keep 7ft x 4ft open space for therapist's portable bed",
+    ],
+    guidelines: [
+      "Strict professional therapeutic protocol maintained at all times",
+    ],
+    faqs: [
+      {
+        question: "Is oil used during this massage?",
+        answer: "No, this is a completely dry session performed over comfortable clothing using acupressure and assisted stretching techniques.",
+      },
+    ],
+    addOns: [],
+    isActive: true,
+    displayOrder: 1,
+  },
+  {
     id: "deep-tissue-massage",
     name: "Deep Tissue Massage",
     slug: "deep-tissue-massage",
@@ -9,7 +63,7 @@ export const initialServices: Service[] = [
     tag: "Most Popular",
     shortDescription: "Intense pressure therapy targeting chronic muscle knots, tightness, and deep postural strain.",
     fullDescription: "ZOVRA's signature Deep Tissue Massage is specifically engineered for men dealing with chronic musculoskeletal tension, desk-bound postural strain, or high-intensity workouts. Our therapist applies firm, sustained pressure and slow, deliberate strokes targeting the sub-layer of musculature and connective tissues (fascia) to dissolve stubborn adhesions and restore full range of motion.",
-    basePrice: 1799,
+    basePrice: 1549,
     rating: 4.92,
     reviewCount: 348,
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
@@ -19,9 +73,9 @@ export const initialServices: Service[] = [
       "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=1200&q=80",
     ],
     durations: [
-      { durationMinutes: 60, price: 1799, originalPrice: 2199 },
-      { durationMinutes: 90, price: 2499, originalPrice: 2999 },
-      { durationMinutes: 120, price: 3199, originalPrice: 3899 },
+      { durationMinutes: 60, price: 1549, originalPrice: 2199 },
+      { durationMinutes: 90, price: 2199, originalPrice: 2899 },
+      { durationMinutes: 120, price: 2899, originalPrice: 3699 },
     ],
     inclusions: [
       "Portable ergonomic massage bed brought by therapist",
@@ -89,7 +143,7 @@ export const initialServices: Service[] = [
     tag: "Stress Reliever",
     shortDescription: "Gentle to medium pressure with long, gliding strokes for supreme whole-body stress relief.",
     fullDescription: "The quintessential relaxation therapy. Designed using traditional Scandinavian techniques including effleurage (gliding strokes), petrissage (kneading), and rhythmic friction. It increases systemic circulation, eases everyday muscular fatigue, and calms the central nervous system.",
-    basePrice: 1599,
+    basePrice: 1249,
     rating: 4.88,
     reviewCount: 285,
     image: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1200&q=80",
@@ -98,8 +152,8 @@ export const initialServices: Service[] = [
       "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
     ],
     durations: [
-      { durationMinutes: 60, price: 1599, originalPrice: 1999 },
-      { durationMinutes: 90, price: 2199, originalPrice: 2699 },
+      { durationMinutes: 60, price: 1249, originalPrice: 1799 },
+      { durationMinutes: 90, price: 1799, originalPrice: 2399 },
     ],
     inclusions: [
       "Full portable massage bed setup with clean sheets",
@@ -152,7 +206,7 @@ export const initialServices: Service[] = [
     tag: "Athletes Choice",
     shortDescription: "Targeted sports bodywork with assisted stretching, myofascial release, and recovery stimulation.",
     fullDescription: "Formulated specifically for physically active men, runners, gym lifters, and athletes. Combines deep targeted compression, cross-fibre friction, and assisted PNF stretching to flush out lactic acid, prevent DOMS (Delayed Onset Muscle Soreness), and restore elasticity to strained tendons and ligaments.",
-    basePrice: 1899,
+    basePrice: 1749,
     rating: 4.95,
     reviewCount: 198,
     image: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=80",
@@ -161,8 +215,8 @@ export const initialServices: Service[] = [
       "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
     ],
     durations: [
-      { durationMinutes: 60, price: 1899, originalPrice: 2299 },
-      { durationMinutes: 90, price: 2599, originalPrice: 3099 },
+      { durationMinutes: 60, price: 1749, originalPrice: 2499 },
+      { durationMinutes: 90, price: 2499, originalPrice: 3199 },
     ],
     inclusions: [
       "Professional massage bed and sports recovery equipment",

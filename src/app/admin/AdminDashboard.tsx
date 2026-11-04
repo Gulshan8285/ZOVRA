@@ -20,8 +20,71 @@ export default function AdminDashboard() {
   const [authError, setAuthError] = useState<string>("");
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "bookings" | "services" | "therapists" | "locations" | "reviews" | "settings"
+    "overview" | "bookings" | "services" | "therapists" | "locations" | "coupons" | "notifications" | "customers" | "reviews" | "settings"
   >("overview");
+
+  // Coupons state
+  const [couponsList, setCouponsList] = useState([
+    {
+      code: "WELCOME20",
+      title: "Welcome 20% OFF",
+      discountType: "percentage",
+      discountValue: 20,
+      minOrderAmount: 800,
+      maxDiscount: 500,
+      isActive: true,
+      validTill: "2026-12-31",
+    },
+    {
+      code: "ZOVRA10",
+      title: "10% Instant Wellness",
+      discountType: "percentage",
+      discountValue: 10,
+      minOrderAmount: 700,
+      maxDiscount: 350,
+      isActive: true,
+      validTill: "2026-12-31",
+    },
+    {
+      code: "SUPER50",
+      title: "Flat ₹50 OFF",
+      discountType: "flat",
+      discountValue: 50,
+      minOrderAmount: 499,
+      maxDiscount: 50,
+      isActive: true,
+      validTill: "2026-12-31",
+    },
+  ]);
+  const [newCouponCode, setNewCouponCode] = useState("");
+  const [newCouponTitle, setNewCouponTitle] = useState("");
+  const [newCouponType, setNewCouponType] = useState<"percentage" | "flat">("percentage");
+  const [newCouponValue, setNewCouponValue] = useState(15);
+  const [newCouponMin, setNewCouponMin] = useState(600);
+
+  // Push Notifications state
+  const [notifHistory, setNotifHistory] = useState([
+    {
+      id: "camp-01",
+      title: "🌿 Weekend Recharge Slots Now Open!",
+      body: "Book your 60-min Dry or Deep Tissue massage before slots fill up.",
+      audience: "All Customers",
+      sentAt: "2026-11-04 10:00 AM",
+      deliveredCount: 420,
+    },
+    {
+      id: "camp-02",
+      title: "✨ Special ₹500 OFF with WELCOME20",
+      body: "Experience 5-star home massage by certified male professionals.",
+      audience: "New Signups",
+      sentAt: "2026-11-02 06:30 PM",
+      deliveredCount: 185,
+    },
+  ]);
+  const [campaignTitle, setCampaignTitle] = useState("");
+  const [campaignBody, setCampaignBody] = useState("");
+  const [campaignAudience, setCampaignAudience] = useState("All Customers");
+  const [campaignSuccess, setCampaignSuccess] = useState(false);
 
   // Stats state
   const [stats, setStats] = useState<{
@@ -135,6 +198,54 @@ export default function AdminDashboard() {
     }
   }, [isAdminAuth]);
 
+  // Export Bookings to CSV
+  const handleExportCSV = () => {
+    if (bookings.length === 0) return;
+    const headers = [
+      "Booking ID",
+      "Customer Name",
+      "Phone",
+      "Service",
+      "Duration (mins)",
+      "Date",
+      "Time Slot",
+      "City",
+      "PIN",
+      "Status",
+      "Therapist",
+      "Total Amount",
+      "Payment Status",
+      "Created At",
+    ];
+    const rows = filteredBookings.map((b) => [
+      b.id,
+      `"${(b.customerName || "").replace(/"/g, '""')}"`,
+      `"${b.customerPhone}"`,
+      `"${(b.serviceName || "").replace(/"/g, '""')}"`,
+      b.durationMinutes,
+      b.appointmentDate,
+      `"${b.timeSlot}"`,
+      `"${b.address?.city || ""}"`,
+      `"${b.address?.pinCode || ""}"`,
+      b.status,
+      `"${b.assignedTherapistName || "Unassigned"}"`,
+      b.totalAmount,
+      b.paymentStatus,
+      b.createdAt,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `zovra-bookings-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Handle booking status and assignment updates
   const handleUpdateBooking = async () => {
     if (!selectedBooking) return;
@@ -244,13 +355,13 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zovra-lightGrey/50 text-zovra-black flex flex-col">
+    <div className="min-h-screen bg-[#080A0F] text-slate-100 flex flex-col">
       {/* Top Admin Header Bar */}
-      <header className="bg-zovra-black text-white sticky top-0 z-30 px-6 py-4 border-b border-gray-800">
+      <header className="bg-[#0D121D] text-white sticky top-0 z-30 px-6 py-4 border-b border-[#1E293B]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Logo size="md" inverted />
-            <span className="hidden sm:inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zovra-softBlue text-zovra-deepBlue">
+            <span className="hidden sm:inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#00D2FF]/15 text-[#00D2FF] border border-[#00D2FF]/30">
               Operations & Dispatch
             </span>
           </div>
@@ -258,7 +369,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4 text-xs">
             <button
               onClick={fetchAllData}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-gray-300 hover:text-white"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141C2E] hover:bg-[#1E293B] border border-[#1E293B] transition-colors text-slate-300 hover:text-white"
               title="Refresh Records"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -268,7 +379,7 @@ export default function AdminDashboard() {
             <Link
               href="/"
               target="_blank"
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white"
+              className="px-3 py-1.5 rounded-lg bg-[#141C2E] hover:bg-[#1E293B] border border-[#1E293B] text-slate-300 hover:text-white"
             >
               View Live Website ↗
             </Link>
@@ -287,11 +398,14 @@ export default function AdminDashboard() {
       {/* Main Admin Content */}
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1 space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-gray-200">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[#1E293B]">
           {[
             { id: "overview", label: "Overview Metrics" },
             { id: "bookings", label: `Bookings (${bookings.length})` },
             { id: "services", label: `Services (${services.length})` },
+            { id: "coupons", label: `Coupons (${couponsList.length})` },
+            { id: "notifications", label: `Push Campaigns (${notifHistory.length})` },
+            { id: "customers", label: `Customers CRM` },
             { id: "therapists", label: `Therapists (${therapists.length})` },
             { id: "locations", label: `Service Areas (${locations.length})` },
             { id: "reviews", label: `Reviews (${reviews.length})` },
@@ -302,8 +416,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? "bg-zovra-black text-white shadow-xs"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  ? "bg-[#00D2FF] text-[#080A0F] shadow-lg shadow-[#00D2FF]/20"
+                  : "bg-[#141C2E] text-slate-300 hover:text-white border border-[#1E293B]"
               }`}
             >
               {tab.label}
@@ -461,6 +575,15 @@ export default function AdminDashboard() {
                     Reset
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#00D2FF]/15 border border-[#00D2FF]/40 text-[#00D2FF] text-xs font-bold hover:bg-[#00D2FF]/25 transition-all shadow-sm"
+                  title="Export All Filtered Bookings as CSV file"
+                >
+                  <span>Export CSV ⤓</span>
+                </button>
               </div>
             </div>
 
@@ -848,6 +971,366 @@ export default function AdminDashboard() {
                   Daily 09:00 AM – 09:00 PM
                 </span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 8. COUPONS & OFFERS MANAGER */}
+        {activeTab === "coupons" && (
+          <div className="bg-[#111827]/90 rounded-3xl p-6 sm:p-8 border border-sky-500/20 shadow-xl space-y-6 text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
+              <div>
+                <h2 className="text-lg font-black text-white">Coupons & Promo Offers</h2>
+                <p className="text-xs text-slate-400">
+                  Create, toggle, and manage live promo vouchers validated in the mobile app & web checkout.
+                </p>
+              </div>
+            </div>
+
+            {/* Create Coupon Form */}
+            <div className="p-5 rounded-2xl bg-[#0D121D] border border-[#1E293B] space-y-4">
+              <h3 className="text-xs font-black uppercase text-[#00D2FF] tracking-wider">
+                Create New Promotional Voucher
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Promo Code</label>
+                  <input
+                    type="text"
+                    value={newCouponCode}
+                    onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. VIP25"
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none focus:border-[#00D2FF]"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Offer Title</label>
+                  <input
+                    type="text"
+                    value={newCouponTitle}
+                    onChange={(e) => setNewCouponTitle(e.target.value)}
+                    placeholder="e.g. 25% Luxury Discount"
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none focus:border-[#00D2FF]"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Discount Type</label>
+                  <select
+                    value={newCouponType}
+                    onChange={(e) => setNewCouponType(e.target.value as "percentage" | "flat")}
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none"
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="flat">Flat Cash (₹)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Discount Value</label>
+                  <input
+                    type="number"
+                    value={newCouponValue}
+                    onChange={(e) => setNewCouponValue(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Min Spend (₹)</label>
+                  <input
+                    type="number"
+                    value={newCouponMin}
+                    onChange={(e) => setNewCouponMin(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!newCouponCode.trim()) return;
+                    setCouponsList([
+                      ...couponsList,
+                      {
+                        code: newCouponCode.trim(),
+                        title: newCouponTitle.trim() || `${newCouponCode} Special`,
+                        discountType: newCouponType,
+                        discountValue: newCouponValue,
+                        minOrderAmount: newCouponMin,
+                        maxDiscount: newCouponType === "percentage" ? 500 : newCouponValue,
+                        isActive: true,
+                        validTill: "2026-12-31",
+                      },
+                    ]);
+                    setNewCouponCode("");
+                    setNewCouponTitle("");
+                  }}
+                  className="px-5 py-2 rounded-xl bg-[#00D2FF] text-[#080A0F] font-bold text-xs hover:bg-[#38BDF8] transition-all shadow-md"
+                >
+                  + Add Voucher
+                </button>
+              </div>
+            </div>
+
+            {/* Coupons Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#1E293B] text-slate-400 uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-3">Code</th>
+                    <th className="py-3 px-3">Title</th>
+                    <th className="py-3 px-3">Discount</th>
+                    <th className="py-3 px-3">Min Order</th>
+                    <th className="py-3 px-3">Status</th>
+                    <th className="py-3 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E293B]/60">
+                  {couponsList.map((coup) => (
+                    <tr key={coup.code} className="hover:bg-[#161F33] transition-colors">
+                      <td className="py-3 px-3 font-mono font-bold text-[#00D2FF]">{coup.code}</td>
+                      <td className="py-3 px-3 font-medium text-white">{coup.title}</td>
+                      <td className="py-3 px-3 text-slate-300">
+                        {coup.discountType === "percentage"
+                          ? `${coup.discountValue}% OFF`
+                          : `₹${coup.discountValue} Flat`}
+                      </td>
+                      <td className="py-3 px-3 text-slate-300">₹{coup.minOrderAmount}</td>
+                      <td className="py-3 px-3">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            coup.isActive
+                              ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                              : "bg-red-500/20 text-red-400 border border-red-500/30"
+                          }`}
+                        >
+                          {coup.isActive ? "ACTIVE" : "DISABLED"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCouponsList(
+                              couponsList.map((c) =>
+                                c.code === coup.code ? { ...c, isActive: !c.isActive } : c
+                              )
+                            );
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-[#1E293B] hover:bg-[#2A3B52] text-xs font-semibold"
+                        >
+                          {coup.isActive ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCouponsList(couponsList.filter((c) => c.code !== coup.code));
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 text-xs font-semibold"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 9. PUSH NOTIFICATIONS CAMPAIGN DISPATCHER */}
+        {activeTab === "notifications" && (
+          <div className="bg-[#111827]/90 rounded-3xl p-6 sm:p-8 border border-sky-500/20 shadow-xl space-y-6 text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
+              <div>
+                <h2 className="text-lg font-black text-white">Push Notification Campaigns</h2>
+                <p className="text-xs text-slate-400">
+                  Compose and broadcast instant promotional announcements or booking reminders to user devices.
+                </p>
+              </div>
+            </div>
+
+            {/* Campaign Composer */}
+            <div className="p-5 rounded-2xl bg-[#0D121D] border border-[#1E293B] space-y-4">
+              <h3 className="text-xs font-black uppercase text-[#00D2FF] tracking-wider">
+                Broadcast New Campaign
+              </h3>
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Notification Title</label>
+                  <input
+                    type="text"
+                    value={campaignTitle}
+                    onChange={(e) => setCampaignTitle(e.target.value)}
+                    placeholder="e.g. 🌿 Exclusive Weekend Massage Slot Available"
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none focus:border-[#00D2FF]"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Notification Body / Message</label>
+                  <textarea
+                    rows={2}
+                    value={campaignBody}
+                    onChange={(e) => setCampaignBody(e.target.value)}
+                    placeholder="e.g. Book your certified home therapy session today and enjoy ₹350 instant savings."
+                    className="w-full px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none focus:border-[#00D2FF]"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1 font-semibold">Target Audience</label>
+                  <select
+                    value={campaignAudience}
+                    onChange={(e) => setCampaignAudience(e.target.value)}
+                    className="w-full sm:w-64 px-3 py-2 rounded-xl bg-[#141C2E] border border-[#1E293B] text-white focus:outline-none"
+                  >
+                    <option value="All Customers">All Customers (Delhi, Mumbai, BLR)</option>
+                    <option value="Active Bookings">Active Bookings Only</option>
+                    <option value="Past Customers (Repeat Care)">Past Customers (Repeat Care)</option>
+                  </select>
+                </div>
+              </div>
+
+              {campaignSuccess && (
+                <div className="p-3 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 font-bold text-xs text-center">
+                  ✓ Notification campaign dispatched successfully to {campaignAudience}!
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!campaignTitle.trim()) return;
+                    setNotifHistory([
+                      {
+                        id: `camp-${Date.now()}`,
+                        title: campaignTitle.trim(),
+                        body: campaignBody.trim(),
+                        audience: campaignAudience,
+                        sentAt: new Date().toLocaleString(),
+                        deliveredCount: 310,
+                      },
+                      ...notifHistory,
+                    ]);
+                    setCampaignSuccess(true);
+                    setTimeout(() => setCampaignSuccess(false), 2500);
+                    setCampaignTitle("");
+                    setCampaignBody("");
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-[#00D2FF] text-[#080A0F] font-bold text-xs hover:bg-[#38BDF8] transition-all shadow-md"
+                >
+                  🚀 Dispatch Notification Now
+                </button>
+              </div>
+            </div>
+
+            {/* Campaign History Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#1E293B] text-slate-400 uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-3">Campaign Title</th>
+                    <th className="py-3 px-3">Message</th>
+                    <th className="py-3 px-3">Audience</th>
+                    <th className="py-3 px-3">Sent Time</th>
+                    <th className="py-3 px-3">Delivered</th>
+                    <th className="py-3 px-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E293B]/60">
+                  {notifHistory.map((camp) => (
+                    <tr key={camp.id} className="hover:bg-[#161F33] transition-colors">
+                      <td className="py-3 px-3 font-bold text-white">{camp.title}</td>
+                      <td className="py-3 px-3 text-slate-300 max-w-xs truncate">{camp.body}</td>
+                      <td className="py-3 px-3 text-slate-300">{camp.audience}</td>
+                      <td className="py-3 px-3 text-slate-400 text-[11px]">{camp.sentAt}</td>
+                      <td className="py-3 px-3 text-[#00D2FF] font-semibold">{camp.deliveredCount} devices</td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">
+                          DELIVERED
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 10. CUSTOMERS CRM DIRECTORY */}
+        {activeTab === "customers" && (
+          <div className="bg-[#111827]/90 rounded-3xl p-6 sm:p-8 border border-sky-500/20 shadow-xl space-y-6 text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
+              <div>
+                <h2 className="text-lg font-black text-white">Customer Directory & Lifetime Value</h2>
+                <p className="text-xs text-slate-400">
+                  Monitor registered accounts, booking frequency, preferred addresses, and total spend.
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#1E293B] text-slate-400 uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-3">Customer Name</th>
+                    <th className="py-3 px-3">Phone & Email</th>
+                    <th className="py-3 px-3">Preferred City</th>
+                    <th className="py-3 px-3">Total Bookings</th>
+                    <th className="py-3 px-3">Total Spend</th>
+                    <th className="py-3 px-3 text-right">VIP Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E293B]/60">
+                  {[
+                    {
+                      name: "Gulshan Yadav",
+                      phone: "+91 98765 43210",
+                      email: "gulshanyadav@gmail.com",
+                      city: "Gurugram, HR",
+                      orders: 4,
+                      spent: "₹3,946",
+                      tier: "PLATINUM VIP",
+                    },
+                    {
+                      name: "Arjun Khanna",
+                      phone: "+91 98112 88990",
+                      email: "arjun.k@example.com",
+                      city: "Delhi NCR",
+                      orders: 2,
+                      spent: "₹2,098",
+                      tier: "GOLD MEMBER",
+                    },
+                    {
+                      name: "Rohit Verma",
+                      phone: "+91 98200 44551",
+                      email: "rohit.v@example.com",
+                      city: "Mumbai",
+                      orders: 1,
+                      spent: "₹1,549",
+                      tier: "STANDARD",
+                    },
+                  ].map((cust) => (
+                    <tr key={cust.phone} className="hover:bg-[#161F33] transition-colors">
+                      <td className="py-3 px-3 font-bold text-white">{cust.name}</td>
+                      <td className="py-3 px-3">
+                        <div className="font-mono text-slate-200">{cust.phone}</div>
+                        <div className="text-slate-400 text-[11px]">{cust.email}</div>
+                      </td>
+                      <td className="py-3 px-3 text-slate-300">{cust.city}</td>
+                      <td className="py-3 px-3 text-white font-semibold">{cust.orders} sessions</td>
+                      <td className="py-3 px-3 font-black text-[#00D2FF]">{cust.spent}</td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00D2FF]/20 text-[#00D2FF] border border-[#00D2FF]/40">
+                          {cust.tier}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
